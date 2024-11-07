@@ -1,27 +1,14 @@
 #!/usr/bin/env python3
-
-
 """
-Function to obfuscate specified fields
-in a log message using a regular expression.
-
-    Args:
-    fields (list): List of field names to obfuscate.
-    redaction (str): String to replace the field's value with.
-    message (str): The log message containing the fields to obfuscate.
-    separator (str): The character separating fields in the message.
-
-    Returns:
-    str: The obfuscated log message.
+Function to obfuscate specified fields in a log
+message using a regular expression.
 """
-
 
 from typing import List
 import re
 import logging
 from os import environ
 import mysql.connector
-
 
 PII_FIELDS = ("name", "email", "phone", "ssn", "password")
 
@@ -55,11 +42,26 @@ def get_db() -> mysql.connector.connection.MySQLConnection:
     host = environ.get("PERSONAL_DATA_DB_HOST", "localhost")
     db_name = environ.get("PERSONAL_DATA_DB_NAME")
 
-    cnx = mysql.connector.connection.MySQLConnection(user=username,
-                                                     password=password,
-                                                     host=host,
-                                                     database=db_name)
-    return cnx
+    # Debugging print statements to ensure
+    # the environment variables are correct
+    print(f"DB Username: {username}")
+    print(f"DB Password: {password}")
+    print(f"DB Host: {host}")
+    print(f"DB Name: {db_name}")
+
+    if not db_name:
+        raise ValueError("Database name (PERSONAL_DATA_DB_NAME) is not set!")
+
+    try:
+        # Create a connection to the database
+        cnx = mysql.connector.connect(user=username,
+                                      password=password,
+                                      host=host,
+                                      database=db_name)
+        return cnx
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        exit(1)  # Exit the program if there's a connection error
 
 
 def main():
@@ -83,8 +85,7 @@ def main():
 
 
 class RedactingFormatter(logging.Formatter):
-    """ Redacting Formatter class
-        """
+    """ Redacting Formatter class """
 
     REDACTION = "***"
     FORMAT = "[HOLBERTON] %(name)s %(levelname)s %(asctime)-15s: %(message)s"
@@ -98,6 +99,8 @@ class RedactingFormatter(logging.Formatter):
         """ Filters values in incoming log records using filter_datum """
         record.msg = filter_datum(self.fields, self.REDACTION,
                                   record.getMessage(), self.SEPARATOR)
+        # Debugging: Print the formatted message
+        print(f"Formatted message: {record.msg}")
         return super(RedactingFormatter, self).format(record)
 
 
