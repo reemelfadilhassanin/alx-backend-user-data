@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 """
-Module for handling Personal Data
+Function to obfuscate specified fields in a log message using a regular expression.
+
+    Args:
+    fields (list): List of field names to obfuscate.
+    redaction (str): String to replace the field's value with.
+    message (str): The log message containing the fields to obfuscate.
+    separator (str): The character separating fields in the message.
+
+    Returns:
+    str: The obfuscated log message.
 """
 from typing import List
 import re
