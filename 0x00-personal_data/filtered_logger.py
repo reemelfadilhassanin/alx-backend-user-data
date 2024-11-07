@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
+
+
 """
-Function to obfuscate specified fields in a log message using a regular expression.
+Function to obfuscate specified fields
+in a log message using a regular expression.
 
     Args:
     fields (list): List of field names to obfuscate.
@@ -11,6 +14,8 @@ Function to obfuscate specified fields in a log message using a regular expressi
     Returns:
     str: The obfuscated log message.
 """
+
+
 from typing import List
 import re
 import logging
