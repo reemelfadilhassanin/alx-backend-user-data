@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 """
-Main file to test password hashing.
+Main file
 """
 
-# Import the hash_password function from encrypt_password module
 hash_password = __import__('encrypt_password').hash_password
+is_valid = __import__('encrypt_password').is_valid
 
-# Example password to hash
 password = "MyAmazingPassw0rd"
-
-# Print the hashed password (twice to show that the salt produces a different hash each time)
-print(hash_password(password))
-print(hash_password(password))
+encrypted_password = hash_password(password)
+print(encrypted_password)
+print(is_valid(encrypted_password, password))
