@@ -2,7 +2,7 @@
 
 
 """
-Encrypting passwords using bcrypt
+Password encryption and validation using bcrypt
 """
 
 
@@ -26,3 +26,18 @@ def hash_password(password: str) -> bytes:
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
 
     return hashed_password
+
+
+def is_valid(hashed_password: bytes, password: str) -> bool:
+    """
+    Validates the provided password against the hashed password.
+
+    Args:
+    hashed_password (bytes): The hashed password to check against.
+    password (str): The plaintext password to validate.
+
+    Returns:
+    bool: True if the password matches the hashed password, otherwise False.
+    """
+    # Use bcrypt's checkpw method to verify if the password matches the hash
+    return bcrypt.checkpw(password.encode('utf-8'), hashed_password)
