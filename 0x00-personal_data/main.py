@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """
-Main file
+Main file to test password hashing.
 """
 
-import logging
+# Import the hash_password function from encrypt_password module
+hash_password = __import__('encrypt_password').hash_password
 
-get_logger = __import__('filtered_logger').get_logger
-PII_FIELDS = __import__('filtered_logger').PII_FIELDS
+# Example password to hash
+password = "MyAmazingPassw0rd"
 
-print(get_logger.__annotations__.get('return'))
-print("PII_FIELDS: {}".format(len(PII_FIELDS)))
+# Print the hashed password (twice to show that the salt produces a different hash each time)
+print(hash_password(password))
+print(hash_password(password))
