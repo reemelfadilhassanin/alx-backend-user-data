@@ -5,32 +5,59 @@ Route module for the API
 from os import getenv
 from api.v1.views import app_views
 from flask import Flask, jsonify, abort, request
-from flask_cors import (CORS, cross_origin)
-import os
+from flask_cors import CORS, cross_origin
+from api.v1.auth.auth import Auth
 
 app = Flask(__name__)
 app.register_blueprint(app_views)
 CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
 
+# Initialize the auth variable based on the environment variable
+auth = None
+auth_type = getenv("AUTH_TYPE", None)
 
-# Error handler for 404
+if auth_type == "auth":
+    auth = Auth()
+
+
+@app.before_request
+def before_request():
+    """Before request handler to filter requests."""
+    if auth is None:
+        return None
+
+    # List of paths that don't require authentication
+    excluded_paths = ['/api/v1/status/',
+                      '/api/v1/unauthorized/', '/api/v1/forbidden/']
+
+    # Check if the path requires authentication
+    if not auth.require_auth(request.path, excluded_paths):
+        return None
+
+    # Validate the Authorization header
+    if auth.authorization_header(request) is None:
+        abort(401, description="Unauthorized")
+
+    # Check if the current user is valid
+    if auth.current_user(request) is None:
+        abort(403, description="Forbidden")
+
+
 @app.errorhandler(404)
 def not_found(error) -> str:
     """ Not found handler """
     return jsonify({"error": "Not found"}), 404
 
 
-# Error handler for 401 Unauthorized
 @app.errorhandler(401)
-def unauthorized(error):
-    """ Unauthorized error handler """
+def unauthorized(error) -> str:
+    """ Unauthorized handler """
     return jsonify({"error": "Unauthorized"}), 401
 
 
-# Error handler for 403 Forbidden
 @app.errorhandler(403)
-def forbidden(error):
-    """ Forbidden error handler """
+def forbidden(error) -> str:
+    """ Forbidden handler """
     return jsonify({"error": "Forbidden"}), 403
 
 
