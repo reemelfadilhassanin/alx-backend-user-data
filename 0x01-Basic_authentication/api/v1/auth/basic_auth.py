@@ -4,6 +4,7 @@
 import base64
 import binascii
 from .auth import Auth
+from models.user import User
 
 
 class BasicAuth(Auth):
@@ -14,8 +15,7 @@ class BasicAuth(Auth):
       - Decode the Base64 part to get the user credentials.
     """
 
-    def decode_base64_authorization_header(self,
-                                           base64_authorization: str) -> str:
+    def decode_base64_authorization_header(self, base64_: str) -> str:
         """Decodes a base64-encoded authorization header.
 
         Args:
@@ -25,13 +25,12 @@ class BasicAuth(Auth):
             str: The decoded value as a UTF-8 string if valid, None otherwise.
         """
         # Check if base64_authorization_header is None or not a string
-        if not isinstance(base64_authorization, str):
+        if not isinstance(base64_, str):
             return None
 
         # Try to decode the Base64 string
         try:
-            decoded_bytes = base64.b64decode(base64_authorization,
-                                             validate=True)
+            decoded_bytes = base64.b64decode(base64_, validate=True)
             return decoded_bytes.decode('utf-8')
         except (binascii.Error, UnicodeDecodeError):
             # If decoding fails, return None
@@ -57,3 +56,35 @@ class BasicAuth(Auth):
         # Split the string into email and password
         email, password = decoded_base64_.split(':', 1)
         return email, password
+
+    def user_object_from_credentials(self, user_email: str,
+                                     user_pwd: str) -> 'User':
+        """Returns a User instance based on email and password.
+
+        Args:
+            user_email (str): The email of the user.
+            user_pwd (str): The password of the user.
+
+        Returns:
+            User: The user instance if valid credentials are found
+        """
+        # Check if user_email and user_pwd are strings
+        if not isinstance(user_email, str) or not isinstance(user_pwd, str):
+            return None
+
+        # Use the search method to find users by email
+        try:
+            users = User.search({'email': user_email})
+        except Exception:
+            return None
+
+        # If no user is found with the given email, return None
+        if len(users) == 0:
+            return None
+
+        # Check if the provided password matches the user's password
+        user = users[0]
+        if user.is_valid_password(user_pwd):
+            return user
+
+        return None
