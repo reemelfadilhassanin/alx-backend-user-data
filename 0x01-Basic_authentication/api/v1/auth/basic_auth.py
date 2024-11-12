@@ -104,16 +104,15 @@ class BasicAuth(Auth):
             return None
 
         # Retrieve the authorization header from the request
-        authorization_header = request.headers.get('Authorization')
+        authorization_ = request.headers.get('Authorization')
 
         # Check if the header is present and starts with 'Basic'
-        if not authorization_header or not authorization_header.startswith(
-            "Basic "):
+        if not authorization_ or not authorization_.startswith("Basic "):
             return None
 
         # Extract the Base64 part of the authorization header
         base64_part = self.extract_base64_authorization_header(
-            authorization_header)
+            authorization_)
 
         # Decode the Base64 part into a string
         decoded = self.decode_base64_authorization_header(base64_part)
