@@ -21,8 +21,7 @@ class BasicAuth(Auth):
             str: The base64 part after 'Basic'
         """
         # Check if authorization_header is None or not a string
-        if authorization_header is None or
-        not isinstance(authorization_header, str):
+        if authorization_header is None or not isinstance(authorization_header, str):
             return None
 
         # Check if the string starts with 'Basic '
