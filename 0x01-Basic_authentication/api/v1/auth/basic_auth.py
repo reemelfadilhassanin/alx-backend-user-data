@@ -1,34 +1,38 @@
 #!/usr/bin/env python3
 """Basic authentication module for the API.
 """
-import re
+import base64
+import binascii
 from .auth import Auth
 
 
 class BasicAuth(Auth):
     """Basic authentication class.
-    This class will handle all Basic Authentication logic for the API.
+    This class handles all Basic Authentication logic for the API.
     It extends the Auth class and implements methods to:
       - Extract the Base64 part of the Authorization header.
+      - Decode the Base64 part to get the user credentials.
     """
 
-    def extract_base64_authorization_header(self,
-                                            authorization_header: str) -> str:
-        """Extracts the Base64 part of the Authorization
+    def decode_base64_authorization_header(self,
+                                           base64_authorizat: str) -> str:
+        """Decodes a base64-encoded authorization header.
 
         Args:
-            authorization_header (str): The full Authorization header
+            base64_authorization_header (str): The Base64 authorization string.
 
         Returns:
-            str: The Base64 part of the header if valid, None otherwise.
+            str: The decoded value as a UTF-8 string if valid, None otherwise.
         """
-        # Check if authorization_header is None or not a string
-        if not isinstance(authorization_header, str):
+        # Check if base64_authorization_header is None or not a string
+        if not isinstance(base64_authorizat, str):
             return None
 
-        # Check if the string starts with 'Basic ' (with a space at the end)
-        if not authorization_header.startswith("Basic "):
+        # Try to decode the Base64 string
+        try:
+            decoded_bytes = base64.b64decode(base64_authorizat,
+                                             validate=True)
+            return decoded_bytes.decode('utf-8')
+        except (binascii.Error, UnicodeDecodeError):
+            # If decoding fails, return None
             return None
-
-        # Return the Base64 part (after 'Basic ')
-        return authorization_header[6:]
