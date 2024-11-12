@@ -6,18 +6,22 @@ from os import getenv
 from api.v1.views import app_views
 from flask import Flask, jsonify, abort, request
 from flask_cors import CORS, cross_origin
-from api.v1.auth.auth import Auth
+
+
+# Conditionally import the correct authentication class
+auth = None
+auth_type = getenv("AUTH_TYPE", None)
+
+if auth_type == "basic_auth":
+    from api.v1.auth.basic_auth import BasicAuth
+    auth = BasicAuth()
+else:
+    from api.v1.auth.auth import Auth
+    auth = Auth()
 
 app = Flask(__name__)
 app.register_blueprint(app_views)
 CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
-
-# Initialize the auth variable based on the environment variable
-auth = None
-auth_type = getenv("AUTH_TYPE", None)
-
-if auth_type == "auth":
-    auth = Auth()
 
 
 @app.before_request
@@ -26,7 +30,6 @@ def before_request():
     if auth is None:
         return None
 
-    # List of paths that don't require authentication
     excluded_paths = ['/api/v1/status/',
                       '/api/v1/unauthorized/', '/api/v1/forbidden/']
 
