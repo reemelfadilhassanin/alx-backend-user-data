@@ -13,6 +13,7 @@ class BasicAuth(Auth):
     It extends the Auth class and implements methods to:
       - Extract the Base64 part of the Authorization header.
       - Decode the Base64 part to get the user credentials.
+      - Retrieve the user based on credentials.
     """
 
     def decode_base64_authorization_header(self, base64_: str) -> str:
@@ -88,3 +89,37 @@ class BasicAuth(Auth):
             return user
 
         return None
+
+    def current_user(self, request=None) -> 'User':
+        """Retrieve the current user based on the Authorization header.
+
+        Args:
+            request (flask.Request, optional): The Flask request object.
+
+        Returns:
+            User: The user instance if credentials are valid, None otherwise.
+        """
+        # Check if request is provided
+        if not request:
+            return None
+
+        # Retrieve the authorization header from the request
+        authorization_header = request.headers.get('Authorization')
+
+        # Check if the header is present and starts with 'Basic'
+        if not authorization_header or not authorization_header.startswith(
+            "Basic "):
+            return None
+
+        # Extract the Base64 part of the authorization header
+        base64_part = self.extract_base64_authorization_header(
+            authorization_header)
+
+        # Decode the Base64 part into a string
+        decoded = self.decode_base64_authorization_header(base64_part)
+
+        # Extract the email and password from the decoded string
+        email, password = self.extract_user_credentials(decoded)
+
+        # Return the user object based on credentials
+        return self.user_object_from_credentials(email, password)
