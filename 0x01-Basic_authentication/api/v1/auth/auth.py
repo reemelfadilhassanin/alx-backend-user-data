@@ -1,13 +1,12 @@
 from typing import List
 
-
 class Auth:
     """ Auth class to manage API authentication """
 
     def require_auth(self, path: str, excluded_paths: List[str]) -> bool:
         """
         Determines whether authentication is required for the given path.
-        Returns True if the path is not in the excluded_paths list,
+        Returns True if the path is not in the excluded_paths list, 
         considering wildcard "*" at the end of the excluded paths.
         """
         if path is None:
