@@ -6,7 +6,7 @@ from api.v1.auth.auth import Auth
 
 class BasicAuth(Auth):
     """ Basic Authentication class. Inherit from Auth class.
-        This class will handle Basic Auth-related tasks
+        This class will handle Basic Auth-related tasks.
     """
 
     def extract_base64_authorization_header(self,
@@ -21,7 +21,8 @@ class BasicAuth(Auth):
             str: The base64 part after 'Basic'
         """
         # Check if authorization_header is None or not a string
-        if authorization_header is None or not isinstance(authorization_header, str):
+        if (authorization_header is None or
+            not isinstance(authorization_header, str)):
             return None
 
         # Check if the string starts with 'Basic '
