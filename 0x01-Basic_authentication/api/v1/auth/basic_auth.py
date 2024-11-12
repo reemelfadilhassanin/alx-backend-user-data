@@ -6,29 +6,32 @@ import base64
 import binascii
 from typing import TypeVar
 
+
 class BasicAuth(Auth):
     """Basic authentication class."""
-    
-    def decode_base64_authorization_header(self, base64_authorization: str) -> str:
+
+    def decode_base64_authorization_header(self, base64_: str) -> str:
         """Decodes a base64-encoded authorization header."""
-        if not isinstance(base64_authorization, str):
+        if not isinstance(base64_, str):
             return None
         try:
-            decoded_bytes = base64.b64decode(base64_authorization, validate=True)
+            decoded_bytes = base64.b64decode(base64_, validate=True)
             return decoded_bytes.decode('utf-8')
         except (binascii.Error, UnicodeDecodeError):
             return None
 
-    def extract_user_credentials(self, decoded_base64_authorization_header: str) -> (str, str):
-        """Extracts the user email and password from the decoded Base64 string."""
-        if not isinstance(decoded_base64_authorization_header, str):
+    def extract_user_credentials(self,
+                                 decoded_base64_: str) -> (str, str):
+        """Extracts the user email and password"""
+        if not isinstance(decoded_base64_, str):
             return None, None
-        if ':' not in decoded_base64_authorization_header:
+        if ':' not in decoded_base64_:
             return None, None
-        email, password = decoded_base64_authorization_header.split(':', 1)
+        email, password = decoded_base64_.split(':', 1)
         return email, password
 
-    def user_object_from_credentials(self, user_email: str, user_pwd: str) -> 'User':
+    def user_object_from_credentials(self,
+                                     user_email: str, user_pwd: str) -> 'User':
         """Retrieves the User instance based on email and password."""
         if not isinstance(user_email, str) or not isinstance(user_pwd, str):
             return None
@@ -48,7 +51,7 @@ class BasicAuth(Auth):
         return None
 
     def current_user(self, request=None) -> 'User':
-        """Overloaded method to get the current user based on the Authorization header."""
+        """Overloaded method to get the current user"""
         if request is None:
             return None
 
@@ -62,7 +65,8 @@ class BasicAuth(Auth):
             return None
 
         # Extract the Base64 part of the header
-        base64_part = self.extract_base64_authorization_header(authorization_header[6:])
+        base64_part = self.extract_base64_authorization_header(
+            authorization_header[6:])
         if not base64_part:
             return None
 
