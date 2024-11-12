@@ -26,7 +26,7 @@ def stats() -> str:
     return jsonify(stats)
 
 
-@app_views.route('/unauthorized', methods=['GET'], strict_slashes=False)
-def unauthorized_route():
-    """Route to trigger a 401 Unauthorized error."""
-    abort(401)  # This will raise a 401 error, triggering the error handler
+@app_views.route('/forbidden', methods=['GET'], strict_slashes=False)
+def forbidden_route():
+    """Route to trigger a 403 Forbidden error."""
+    abort(403)  # This will raise a 403 error, triggering the error handler
