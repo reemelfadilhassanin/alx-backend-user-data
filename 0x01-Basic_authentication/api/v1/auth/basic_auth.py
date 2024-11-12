@@ -1,33 +1,34 @@
 #!/usr/bin/env python3
-""" BasicAuth class to manage basic authentication.
+"""Basic authentication module for the API.
 """
-from api.v1.auth.auth import Auth
+import re
+from .auth import Auth
 
 
 class BasicAuth(Auth):
-    """ Basic Authentication class. Inherit from Auth class.
-        This class will handle Basic Auth-related tasks.
+    """Basic authentication class.
+    This class will handle all Basic Authentication logic for the API.
+    It extends the Auth class and implements methods to:
+      - Extract the Base64 part of the Authorization header.
     """
 
     def extract_base64_authorization_header(self,
                                             authorization_header: str) -> str:
-        """
-        Extracts the base64 part of the Authorization header for Basic Auth.
+        """Extracts the Base64 part of the Authorization
 
         Args:
-            authorization_header (str): The full Authorization header.
+            authorization_header (str): The full Authorization header
 
         Returns:
-            str: The base64 part after 'Basic'
+            str: The Base64 part of the header if valid, None otherwise.
         """
         # Check if authorization_header is None or not a string
-        if (authorization_header is None or
-            not isinstance(authorization_header, str)):
+        if not isinstance(authorization_header, str):
             return None
 
-        # Check if the string starts with 'Basic '
+        # Check if the string starts with 'Basic ' (with a space at the end)
         if not authorization_header.startswith("Basic "):
             return None
 
-        # Return the base64 part (after 'Basic ')
+        # Return the Base64 part (after 'Basic ')
         return authorization_header[6:]
