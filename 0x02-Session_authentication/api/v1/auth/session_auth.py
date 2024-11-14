@@ -40,7 +40,7 @@ class SessionAuth(Auth):
             session_id (str): The session ID to look up.
 
         Returns:
-            str: The user_id associate
+            str: The user_id associated with the session_id, or None.
         """
         if session_id is None or not isinstance(session_id, str):
             return None
