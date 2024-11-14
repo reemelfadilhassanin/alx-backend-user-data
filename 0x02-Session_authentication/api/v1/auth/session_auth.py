@@ -1,86 +1,40 @@
 #!/usr/bin/env python3
-"""
-SessionAuth class for session-based authentication
-"""
-from api.v1.auth.auth import Auth
-import uuid
+"""Session Authentication Views"""
+from flask import jsonify, request, make_response
+from api.v1.views import app_views
 from models.user import User
+from api.v1.app import auth
+# Import auth instance for session-based authentication
 
 
-class SessionAuth(Auth):
-    """Session-based authentication class.
+@app_views.route('/auth_session/login', methods=['POST'], strict_slashes=False)
+def login():
+    """Handles login requests for session-based authentication."""
+    # Get email and password from form data
+    email = request.form.get("email")
+    password = request.form.get("password")
 
-    This class implements session-based authentication.
-    It allows the creation of
-    a session ID for a given user_id and stores them in memory.
-    """
-    user_id_by_session_id = {}
+    # Check if email or password is missing
+    if not email:
+        return jsonify({"error": "email missing"}), 400
+    if not password:
+        return jsonify({"error": "password missing"}), 400
 
-    def create_session(self, user_id: str = None) -> str:
-        """Create a session ID for the given user_id.
+    # Retrieve the user instance based on the email
+    user = User.search({"email": email})
+    if not user:
+        return jsonify({"error": "no user found for this email"}), 404
 
-        Args:
-            user_id (str): The user_id for which the session ID is created.
+    # Check if the password is correct
+    if not user[0].is_valid_password(password):
+        return jsonify({"error": "wrong password"}), 401
 
-        Returns:
-            str: The generated session ID, or None if user_id is invalid.
-        """
-        # Check if user_id is valid
-        if user_id is None or not isinstance(user_id, str):
-            return None
+    # Create a session for the user
+    session_id = auth.create_session(user[0].id)
 
-        # Generate a new session ID using uuid4
-        session_id = str(uuid.uuid4())
+    # Prepare the response and set the session cookie
+    response = make_response(jsonify(user[0].to_json()))
+    session_name = getenv("SESSION_NAME", "_my_session_id")
+    response.set_cookie(session_name, session_id)
 
-        # Store the session_id with user_id in the class attribute
-        self.user_id_by_session_id[session_id] = user_id
-
-        return session_id
-
-    def user_id_for_session_id(self, session_id: str = None) -> str:
-        """Return the User ID based on the Session ID.
-
-        Args:
-            session_id (str): The session ID to look up.
-
-        Returns:
-            str: The user_id associated with the session_id,
-            or None if not found.
-        """
-        # Check if session_id is valid
-        if session_id is None or not isinstance(session_id, str):
-            return None
-
-        # Retrieve the user_id associated with
-        # the session_id, or None if not found
-        return self.user_id_by_session_id.get(session_id, None)
-
-    def session_cookie(self, request=None):
-        """Returns the cookie value from the request."""
-        if request is None:
-            return None
-        # Get the session ID cookie from the request using the session name
-        session_name = getenv("SESSION_NAME", "_my_session_id")
-        return request.cookies.get(session_name)
-
-    def current_user(self, request=None):
-        """Returns the current User instance based on the session ID.
-
-        Args:
-            request: The Flask request object containing the session cookie.
-
-        Returns:
-            User instance or None if no user is found.
-        """
-        # Get the session ID from the request's cookies
-        session_id = self.session_cookie(request)
-
-        # Get the user_id associated with this session ID
-        user_id = self.user_id_for_session_id(session_id)
-
-        # If we have a valid user_id, retrieve the User instance
-        if user_id is not None:
-            return User.get(user_id)
-
-        # If no user found, return None
-        return None
+    return response
