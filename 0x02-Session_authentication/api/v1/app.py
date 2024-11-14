@@ -16,12 +16,16 @@ auth_type = getenv("AUTH_TYPE", None)
 if auth_type == "basic_auth":
     from api.v1.auth.basic_auth import BasicAuth
     auth = BasicAuth()
+elif auth_type == "session_auth":
+    from api.v1.auth.session_auth import SessionAuth
+    auth = SessionAuth()
 else:
     from api.v1.auth.auth import Auth
     auth = Auth()
 
 # Setup logging
-logging.basicConfig(level=logging.DEBUG)  # Set the logging level to DEBUG for detailed logs
+logging.basicConfig(level=logging.DEBUG)
+# Set the logging level to DEBUG for detailed logs
 
 app = Flask(__name__)
 app.register_blueprint(app_views)
@@ -34,7 +38,9 @@ def before_request():
     if auth is None:
         return None
 
-    excluded_paths = ['/api/v1/status/', '/api/v1/unauthorized/', '/api/v1/forbidden/']
+    excluded_paths = [
+        '/api/v1/status/',
+        '/api/v1/unauthorized/', '/api/v1/forbidden/']
 
     # Check if the path requires authentication
     if not auth.require_auth(request.path, excluded_paths):
