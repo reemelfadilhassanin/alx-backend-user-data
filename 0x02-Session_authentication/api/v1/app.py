@@ -42,20 +42,21 @@ def before_request():
         return None
 
     # List of excluded paths that don't require authentication
-    excluded_paths = ['/api/v1/status/',
-                      '/api/v1/unauthorized/',
-                      '/api/v1/forbidden/',
-                      '/api/v1/auth_session/login/']
-    # Add login endpoint to excluded paths
+    excluded_paths = [
+        '/api/v1/status/',
+        '/api/v1/unauthorized/',
+        '/api/v1/forbidden/',
+        '/api/v1/auth_session/login/'  # Add login endpoint to excluded paths
+    ]
 
     # Check if the path is in the excluded paths list
     if not auth.require_auth(request.path, excluded_paths):
         return None
 
     # Check if both the authorization header and session cookie are missing
-    if auth.authorization_header(request) is None and auth.session_cookie(request) is None:
+    if (auth.authorization_header(request) is None and
+            auth.session_cookie(request) is None):
         abort(401, description="Unauthorized")
-        # Abort with Unauthorized error if both are missing
 
     # Handle session-based authentication
     if request.path != '/api/v1/auth_session/login':
@@ -74,19 +75,19 @@ def before_request():
 
 @app.errorhandler(404)
 def not_found(error) -> str:
-    """ Not found handler """
+    """Not found handler"""
     return jsonify({"error": "Not found"}), 404
 
 
 @app.errorhandler(401)
 def unauthorized_error(error) -> str:
-    """ Unauthorized handler """
+    """Unauthorized handler"""
     return jsonify({"error": "Unauthorized"}), 401
 
 
 @app.errorhandler(403)
 def forbidden_error(error) -> str:
-    """ Forbidden handler """
+    """Forbidden handler"""
     return jsonify({"error": "Forbidden"}), 403
 
 
