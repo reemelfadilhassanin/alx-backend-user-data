@@ -38,22 +38,31 @@ def before_request():
     if auth is None:
         return None
 
+    # List of excluded paths (the login route
+    # should not be blocked by authentication)
     excluded_paths = [
         '/api/v1/status/',
-        '/api/v1/unauthorized/', '/api/v1/forbidden/']
+        '/api/v1/unauthorized/',
+        '/api/v1/forbidden/',
+        '/api/v1/auth_session/login/'  # Exclude the login route
+    ]
 
     # Check if the path requires authentication
     if not auth.require_auth(request.path, excluded_paths):
         logging.debug("Path does not require authentication.")
         return None
 
-    # Validate the Authorization header
+    # Validate the Authorization header or session cookie
     auth_header = auth.authorization_header(request)
-    if auth_header is None:
-        logging.warning("No authorization header found.")
+    session_cookie = auth.session_cookie(request)
+
+    if auth_header is None and session_cookie is None:
+        logging.warning("No authorization header or session cookie found.")
         abort(401, description="Unauthorized")
     else:
-        logging.debug(f"Authorization header found: {auth_header}")
+        logging.debug(
+            f"Authorization header: {auth_header},
+            Session cookie: {session_cookie}")
 
     # Check if the current user is valid
     current_user = auth.current_user(request)
