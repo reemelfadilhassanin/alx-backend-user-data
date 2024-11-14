@@ -130,5 +130,5 @@ def get_current_user() -> str:
       - 404 if user is not authenticated
     """
     if request.current_user is None:
-        abort(404)  # or return 401 Unauthorized depending on the desired behavior
+        abort(404)
     return jsonify(request.current_user.to_json())
