@@ -1,40 +1,68 @@
 #!/usr/bin/env python3
-"""Session Authentication Views"""
-from flask import jsonify, request, make_response
-from api.v1.views import app_views
-from models.user import User
-from api.v1.app import auth
-# Import auth instance for session-based authentication
+"""
+SessionAuth class for session-based authentication
+"""
+from api.v1.auth.auth import Auth
+import uuid
 
+class SessionAuth(Auth):
+    """Session-based authentication class.
 
-@app_views.route('/auth_session/login', methods=['POST'], strict_slashes=False)
-def login():
-    """Handles login requests for session-based authentication."""
-    # Get email and password from form data
-    email = request.form.get("email")
-    password = request.form.get("password")
+    This class implements session-based authentication.
+    It allows the creation of a session ID for a given user_id and stores them in memory.
+    """
+    user_id_by_session_id = {}
 
-    # Check if email or password is missing
-    if not email:
-        return jsonify({"error": "email missing"}), 400
-    if not password:
-        return jsonify({"error": "password missing"}), 400
+    def create_session(self, user_id: str = None) -> str:
+        """Create a session ID for the given user_id.
 
-    # Retrieve the user instance based on the email
-    user = User.search({"email": email})
-    if not user:
-        return jsonify({"error": "no user found for this email"}), 404
+        Args:
+            user_id (str): The user_id for which the session ID is created.
 
-    # Check if the password is correct
-    if not user[0].is_valid_password(password):
-        return jsonify({"error": "wrong password"}), 401
+        Returns:
+            str: The generated session ID, or None if user_id is invalid.
+        """
+        if user_id is None or not isinstance(user_id, str):
+            return None
 
-    # Create a session for the user
-    session_id = auth.create_session(user[0].id)
+        session_id = str(uuid.uuid4())
+        self.user_id_by_session_id[session_id] = user_id
+        return session_id
 
-    # Prepare the response and set the session cookie
-    response = make_response(jsonify(user[0].to_json()))
-    session_name = getenv("SESSION_NAME", "_my_session_id")
-    response.set_cookie(session_name, session_id)
+    def user_id_for_session_id(self, session_id: str = None) -> str:
+        """Return the User ID based on the Session ID.
 
-    return response
+        Args:
+            session_id (str): The session ID to look up.
+
+        Returns:
+            str: The user_id associated with the session_id, or None if not found.
+        """
+        if session_id is None or not isinstance(session_id, str):
+            return None
+
+        return self.user_id_by_session_id.get(session_id, None)
+
+    def destroy_session(self, request=None) -> bool:
+        """Destroy the session for the current user.
+
+        Args:
+            request (flask.Request): The request object.
+
+        Returns:
+            bool: True if session was successfully destroyed, False otherwise.
+        """
+        if request is None:
+            return False
+
+        session_id = self.session_cookie(request)
+        if session_id is None:
+            return False
+
+        user_id = self.user_id_for_session_id(session_id)
+        if user_id is None:
+            return False
+
+        # Delete the session from the dictionary
+        del self.user_id_by_session_id[session_id]
+        return True
