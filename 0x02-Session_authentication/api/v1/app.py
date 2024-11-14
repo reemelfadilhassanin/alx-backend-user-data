@@ -14,10 +14,8 @@ app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 app.register_blueprint(app_views)
 CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
 
-
 # Secret key for session management (make sure this is set securely in prod)
 app.secret_key = getenv("SECRET_KEY", "your_secret_key")
-
 
 # Conditionally import the correct authentication class
 auth = None
@@ -46,19 +44,19 @@ def before_request():
     excluded_paths = ['/api/v1/status/',
                       '/api/v1/unauthorized/',
                       '/api/v1/forbidden/',
-                      '/api/v1/auth_session/login/']
+                      '/api/v1/auth_session/login/']  # Add login endpoint
 
     # Check if the path requires authentication
     if not auth.require_auth(request.path, excluded_paths):
         return None
 
-    # Session-based authentication
+    # Handle session-based authentication
     if request.path != '/api/v1/auth/login':  # Skip authentication for login
         user_id = session.get('user_id')  # Get user_id from session
         if user_id is None:
             abort(401, description="Unauthorized")
 
-        # Find user from database using the user_id from session
+        # Find user from the database using the user_id from session
         user = User.get(user_id)
         if user is None:
             abort(401, description="Unauthorized")
