@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """ Module of Users views
 """
+import logging
 from api.v1.views import app_views
 from flask import abort, jsonify, request
 from models.user import User
@@ -12,34 +13,32 @@ def view_all_users() -> str:
     Return:
       - list of all User objects JSON represented
     """
-    all_users = [user.to_json() for user in User.all()]
-    return jsonify(all_users)
+    try:
+        logging.debug("Fetching all users from the database...")
+        all_users = [user.to_json() for user in User.all()]
+        if not all_users:
+            logging.debug("No users found.")
+            return jsonify({"error": "No users found"}), 404
+        return jsonify(all_users)
+    except Exception as e:
+        logging.error(f"Error fetching users: {e}")
+        return jsonify({"error": "Internal server error"}), 500
 
 
 @app_views.route('/users/<user_id>', methods=['GET'], strict_slashes=False)
 def view_one_user(user_id: str = None) -> str:
-    """ GET /api/v1/users/:id or /api/v1/users/me
+    """ GET /api/v1/users/:id
     Path parameter:
       - User ID
     Return:
       - User object JSON represented
       - 404 if the User ID doesn't exist
     """
-
     if user_id is None:
         abort(404)
-
-    # Handle the special case for "me"
-    if user_id == "me":
-        if request.current_user is None:
-            abort(401)  # Unauthorized if no current user is found
-        return jsonify(request.current_user.to_json())
-
-    # Fetch user by ID
     user = User.get(user_id)
     if user is None:
         abort(404)
-
     return jsonify(user.to_json())
 
 
@@ -49,7 +48,7 @@ def delete_user(user_id: str = None) -> str:
     Path parameter:
       - User ID
     Return:
-      - empty JSON if the User has been correctly deleted
+      - empty JSON is the User has been correctly deleted
       - 404 if the User ID doesn't exist
     """
     if user_id is None:

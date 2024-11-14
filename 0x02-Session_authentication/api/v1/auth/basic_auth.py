@@ -37,6 +37,24 @@ class BasicAuth(Auth):
             # If decoding fails, return None
             return None
 
+    def extract_base64_authorization_header(self, authorization_header: str) -> str:
+        """Extracts the Base64 part of the Authorization header.
+
+        Args:
+            authorization_header (str): The entire Authorization header from the request.
+
+        Returns:
+            str: The Base64 encoded part of the header if valid, None otherwise.
+        """
+        if not isinstance(authorization_header, str):
+            return None
+
+        if not authorization_header.startswith("Basic "):
+            return None
+
+        # Extract the Base64 part of the Authorization header
+        return authorization_header.split(" ")[1]
+
     def extract_user_credentials(self, decoded_base64_: str) -> (str, str):
         """Extracts user credentials (email and password)
 
@@ -111,8 +129,7 @@ class BasicAuth(Auth):
             return None
 
         # Extract the Base64 part of the authorization header
-        base64_part = self.extract_base64_authorization_header(
-            authorization_)
+        base64_part = self.extract_base64_authorization_header(authorization_)
 
         # Decode the Base64 part into a string
         decoded = self.decode_base64_authorization_header(base64_part)
