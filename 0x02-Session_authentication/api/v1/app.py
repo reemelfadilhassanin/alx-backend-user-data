@@ -41,27 +41,35 @@ def before_request():
     if auth is None:
         return None
 
+    # List of excluded paths that don't require authentication
     excluded_paths = ['/api/v1/status/',
                       '/api/v1/unauthorized/',
                       '/api/v1/forbidden/',
-                      '/api/v1/auth_session/login/']  # Add login endpoint
+                      '/api/v1/auth_session/login/']
+    # Add login endpoint to excluded paths
 
-    # Check if the path requires authentication
+    # Check if the path is in the excluded paths list
     if not auth.require_auth(request.path, excluded_paths):
         return None
 
+    # Check if both the authorization header and session cookie are missing
+    if auth.authorization_header(request) is None and auth.session_cookie(request) is None:
+        abort(401, description="Unauthorized")
+        # Abort with Unauthorized error if both are missing
+
     # Handle session-based authentication
-    if request.path != '/api/v1/auth/login':  # Skip authentication for login
+    if request.path != '/api/v1/auth_session/login':
         user_id = session.get('user_id')  # Get user_id from session
         if user_id is None:
             abort(401, description="Unauthorized")
 
-        # Find user from the database using the user_id from session
+        # Find the user based on the user_id stored in the session
         user = User.get(user_id)
         if user is None:
             abort(401, description="Unauthorized")
 
-        request.current_user = user  # Set the current_user on the request
+        # Set the user on the request object (for future access)
+        request.current_user = user
 
 
 @app.errorhandler(404)
