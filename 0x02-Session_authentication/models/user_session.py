@@ -8,7 +8,7 @@ from datetime import datetime
 
 class UserSession(Base):
     """Represents a user session."""
-    
+
     def __init__(self, *args: list, **kwargs: dict):
         """Initializes a UserSession."""
         if kwargs:
