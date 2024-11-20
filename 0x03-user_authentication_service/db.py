@@ -63,10 +63,10 @@ class DB:
             # Query the users table based on the keyword arguments
             user = self._session.query(User).filter_by(**kwargs).first()
 
-            # If no user is found, raise NoResultFound exception
             if user is None:
                 raise
-            NoResultFound("No user found matching the provided criteria.")
+            NoResultFound(
+                "No user found matching the provided criteria.")
 
             return user
 
@@ -76,5 +76,6 @@ class DB:
             NoResultFound("No user found matching the provided criteria.")
 
         except InvalidRequestError as e:
-            # This handles the case
-            raise InvalidRequestError("Invalid query argument passed.") from e
+            # This
+            raise InvalidRequestError(
+                "Invalid query argument passed.") from e
