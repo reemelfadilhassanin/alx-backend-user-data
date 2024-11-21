@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Authentication module
+This modules to interact with the authentication db
 """
 import bcrypt
 from db import DB
@@ -10,17 +10,19 @@ from sqlalchemy.orm.exc import NoResultFound
 
 
 class Auth:
-    """Auth class to interact with the authentication database.
+    """This class to interact with the authentication db
     """
 
     def __init__(self):
+        """creating a new DB instance.
+        """
         self._db = DB()
 
     def register_user(self, email: str, password: str) -> User:
-        """ Registers new user
+        """ Registers new user by email&passw
             Args:
-                - email: user's email
-                - password: user's password
+                - email(str): user's email
+                - password(str): user's password
             Return:
                 - User instance created
         """
@@ -51,7 +53,7 @@ class Auth:
         return True
 
     def create_session(self, email: str) -> str:
-        """ Creates session for user
+        """ Creates a session for user by email
             Args:
                 - email: user's email
             Return:
@@ -83,17 +85,13 @@ class Auth:
         return user
 
     def destroy_session(self, user_id: int) -> None:
-        """ Destroys user session
+        """ Destroys the user session
         """
         db = self._db
         db.update_user(user_id, session_id=None)
 
     def get_reset_password_token(self, email: str) -> str:
-        """ Generates reset password token for valid user
-            Args:
-                - email: user's email
-            Return:
-                - reset password token
+        """ Generates reset password token foruser
         """
         db = self._db
         try:
@@ -105,12 +103,7 @@ class Auth:
         return reset_token
 
     def update_password(self, reset_token: str, password: str) -> None:
-        """ Update password for user with matching reset token
-            Args:
-                - reset_toke: user's reset token
-                - password: new password
-            Return:
-                - None
+        """ Update password for user
         """
         db = self._db
         try:
@@ -123,10 +116,6 @@ class Auth:
 
 def _hash_password(password: str) -> bytes:
     """ Creates password hash
-        Args:
-            - password: user password
-        Return:
-            - hashed password
     """
     e_pwd = password.encode()
     return bcrypt.hashpw(e_pwd, bcrypt.gensalt())
@@ -134,7 +123,5 @@ def _hash_password(password: str) -> bytes:
 
 def _generate_uuid() -> str:
     """ Generates unique ids
-        Return:
-            - UUID generated
     """
     return str(uuid4())
