@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""DB module
+"""This module defines the DB class
+to manage interactions with the database
 """
 from sqlalchemy import create_engine, tuple_
 from sqlalchemy.exc import InvalidRequestError
@@ -10,7 +11,7 @@ from user import Base, User
 
 
 class DB:
-    """DB class
+    """DB class to manage database interactions
     """
 
     def __init__(self) -> None:
@@ -23,7 +24,7 @@ class DB:
 
     @property
     def _session(self) -> Session:
-        """Memoized session object
+        """Get memoized session object
         """
         if self.__session is None:
             DBSession = sessionmaker(bind=self._engine)
@@ -32,10 +33,10 @@ class DB:
 
     def add_user(self, email: str, hashed_password: str) -> User:
         """ Creates new User instance and
-            saves them to the database.
+            saves them to db
             Args:
-                - email
-                - hashed_password
+                - email(str)
+                - hashed_password(str)
             Return:
                 - new User object
         """
@@ -50,10 +51,9 @@ class DB:
         return new_user
 
     def find_user_by(self, **kwargs) -> User:
-        """ Find user by a given attribute
+        """ Set attribute
             Args:
-                - Dictionary of attributes to use as search
-                  parameters
+                - **kwargs
             Return:
                 - User object
         """
@@ -73,9 +73,10 @@ class DB:
         return user
 
     def update_user(self, user_id: int, **kwargs) -> None:
-        """ Searches for user instance using given id parameter
+        """ Update userby using given id parameter
             Args:
-                - user_id: user's id
+                - user_id(int): user's id
+                **kwargs:dic
             Return:
                 - User instance found
         """

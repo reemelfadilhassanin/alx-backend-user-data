@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Users model
+This module containing the User model for
+the user authentication service.
 """
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
@@ -9,7 +10,7 @@ Base = declarative_base()
 
 
 class User(Base):
-    """ Represents user object/table
+    """ Represents user in db
     """
     __tablename__ = 'users'
 
