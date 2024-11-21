@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-E2E integration test module
+End-to-End Integration Test Module
 """
 from requests import get, put, post, delete
 
 
 def register_user(email: str, password: str) -> None:
-    """ User registration test
+    """ Test the user registration process
     """
     # New user successfully created
     request = post("http://0.0.0.0:5000/users",
@@ -24,7 +24,7 @@ def register_user(email: str, password: str) -> None:
 
 
 def log_in_wrong_password(email: str, password: str) -> None:
-    """ Wrong password test
+    """ Test login attempt with incorrect password
     """
     request = post("http://0.0.0.0:5000/sessions",
                    data={'email': email, "password": password})
@@ -33,7 +33,7 @@ def log_in_wrong_password(email: str, password: str) -> None:
 
 
 def log_in(email: str, password: str) -> str:
-    """ Login test
+    """ Test login with correct credentials
         Return:
             - session_id
     """
@@ -48,14 +48,14 @@ def log_in(email: str, password: str) -> str:
 
 
 def profile_unlogged() -> None:
-    """ Signed out user profile test
+    """ Test accessing the profile when the user is not logged in
     """
     request = get("http://0.0.0.0:5000/profile")
     assert request.status_code == 403
 
 
 def profile_logged(session_id: str) -> None:
-    """ Signed in user profile test
+    """ Test accessing the profile when the user is logged in
     """
     request = get("http://0.0.0.0:5000/profile",
                   cookies={"session_id": session_id})
@@ -65,7 +65,7 @@ def profile_logged(session_id: str) -> None:
 
 
 def log_out(session_id: str) -> None:
-    """ Logout test
+    """ Test logging out
     """
     request = delete("http://0.0.0.0:5000/sessions",
                      cookies={"session_id": session_id},
@@ -79,7 +79,7 @@ def log_out(session_id: str) -> None:
 
 
 def reset_password_token(email: str) -> str:
-    """ Reset token test
+    """ Test requesting a password reset token
         Return:
             - reset token
     """
@@ -93,7 +93,7 @@ def reset_password_token(email: str) -> str:
 
 
 def update_password(email: str, reset_token: str, new_password: str) -> None:
-    """ Password update test
+    """ Test updating the password
     """
     request = put("http://0.0.0.0:5000/reset_password",
                   data={"email": email, "new_password":
