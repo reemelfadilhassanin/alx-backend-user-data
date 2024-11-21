@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Flask app
+Flask app to manage user authentication,
+sessions, and password reset
 """
 from auth import Auth
 from flask import Flask, abort, jsonify, request, redirect, url_for
@@ -14,8 +15,9 @@ AUTH = Auth()
 @app.route("/")
 def home() -> str:
     """ Home endpoint
+        This route returns a welcome message
         Return:
-            - Logout message JSON represented
+            - JSON message
     """
     return jsonify({"message": "Bienvenue"})
 
@@ -23,12 +25,14 @@ def home() -> str:
 @app.route("/sessions", methods=["POST"])
 def login():
     """ Login endpoint
+        This route allows users to log in
         Form fields:
-            - email
-            - password
+            - email: User's email address
+            - password: User's password
         Return:
-            - user email and login message JSON represented
-            - 401 if credential are invalid
+            - JSON with the user’s email and a success message
+            if credentials are valid
+            - 401 if credentials are invalid
     """
     email = request.form.get("email")
     password = request.form.get("password")
@@ -43,8 +47,10 @@ def login():
 @app.route("/sessions", methods=["DELETE"])
 def logout():
     """ Logout endpoint
+        This route logs out the user
         Return:
-            - redirect to home page
+            - Redirects to the home
+            - 403 if no valid session is found
     """
     session_id = request.cookies.get("session_id")
     user = AUTH.get_user_from_session_id(session_id)
@@ -57,9 +63,13 @@ def logout():
 @app.route("/users", methods=["POST"])
 def users():
     """ New user signup endpoint
+        This route allows a new user to register
         Form fields:
-            - email
-            - password
+            - email: User's email address
+            - password: User's password
+        Return:
+            - JSON message with the user's email
+            - 400 if the email is already registered
     """
     email = request.form.get("email")
     password = request.form.get("password")
@@ -73,9 +83,12 @@ def users():
 @app.route("/profile")
 def profile() -> str:
     """ User profile endpoint
+        This route returns the profile of
+        the currently logged-in user.
         Return:
-            - user email JSON represented
-            - 403 if session_id is not linked to any user
+            - JSON with the user's email
+            - 403 if the session is not valid or
+            not linked to any user
     """
     session_id = request.cookies.get("session_id")
     user = AUTH.get_user_from_session_id(session_id)
@@ -87,11 +100,14 @@ def profile() -> str:
 @app.route("/reset_password", methods=["POST"])
 def get_reset_password_token() -> str:
     """ Reset password token endpoint
+        This route allows the user to request
+        a password reset by providing their email.
         Form fields:
-            - email
+            - email: User's email address
         Return:
-            - email and reset token JSON represented
-            - 403 if email is not associated with any user
+            - JSON with the user's email and a
+            reset token if the email is valid
+            - 403 if the email is not associated with any user
     """
     email = request.form.get("email")
     try:
@@ -105,13 +121,14 @@ def get_reset_password_token() -> str:
 @app.route("/reset_password", methods=["PUT"])
 def update_password():
     """ Password update endpoint
+        This route allows a user to update their password
         Form fields:
-            - email
-            - reset_token
-            - new_password
+            - email: User's email address
+            - reset_token: Token received
+            - new_password: New password to be set
         Return:
-            - user email and password update message JSON represented
-            - 403 if reset token is not provided or not linked to any user
+            - JSON message with the user's email
+            - 403 if the reset token is not valid
     """
     email = request.form.get("email")
     new_password = request.form.get("new_password")
